@@ -21,16 +21,7 @@ class ModelService extends Service
     public $modelName = null;
     protected $model;
 
-    /**
-     * 如果容器有实例,则从容器获取实例
-     * @return null
-     * @throws \yii\base\InvalidConfigException
-     */
-    public static function instance()
-    {
-        $className = get_called_class();
-        return Map::instance($className);
-    }
+
 
     /**
      * ModelService constructor.

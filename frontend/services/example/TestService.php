@@ -7,6 +7,7 @@
  */
 namespace frontend\services\example;
 
+use common\components\facades\Map;
 use frontend\components\base\ModelService;
 use frontend\models\example\UserModel;
 
@@ -20,7 +21,7 @@ class TestService extends ModelService {
 
     function __construct()
     {
-        $this->model = new UserModel();
+        $this->model = Map::getInstance(UserModel::class);
     }
 
     function getItems() {

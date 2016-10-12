@@ -30,6 +30,6 @@ class Map {
      * @param $classInstance
      */
     static function setInstance($className, $classInstance) {
-        \Yii::$container->set($className, $classInstance);
+        return \Yii::$container->set($className, $classInstance);
     }
 }
