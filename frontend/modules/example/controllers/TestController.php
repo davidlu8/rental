@@ -25,7 +25,17 @@ class TestController extends Controller
     public function actionOne()
     {
         $testService = new TestService();
-        $items = $testService->getAll();
+        $items = $testService->getItems();
         return $this->success($items);
+    }
+
+    public function actionInsert()
+    {
+        $testService = new TestService();
+        return $this->success($testService->insert([
+            'name' => '鲁伟',
+            'account' => 'luw01',
+            'mobile' => '123',
+        ]));
     }
 }

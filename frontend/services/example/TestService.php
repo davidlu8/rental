@@ -7,20 +7,20 @@
  */
 namespace frontend\services\example;
 
-use frontend\components\base\Service;
 use frontend\components\base\ModelService;
+use frontend\models\example\UserModel;
 
 /**
  * Class TestService
  * @package frontend\services\example
  */
-class TestService extends Service {
-    use ModelService;
-    protected $modelName = 'frontend\models\example\UserModel';
-    protected $model;
+class TestService extends ModelService {
+    public $modelName = UserModel::class;
+    public $model;
+
     function __construct()
     {
-        $this->init();
+        $this->model = new UserModel();
     }
 
     function getItems() {

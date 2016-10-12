@@ -9,16 +9,17 @@ namespace frontend\components\base;
 
 use app\framework\utils\StringHelper;
 use app\framework\utils\DateTimeHelper;
+use frontend\models\example\UserModel;
+use common\components\facades\Map;
 
 /**
  * Class ModelService
  * @package frontend\components\base
  */
-trait ModelService
+class ModelService extends Service
 {
-    //public $model;
-    //public $modelName = null;
-    public static $instance = null;
+    public $modelName = null;
+    protected $model;
 
     /**
      * 如果容器有实例,则从容器获取实例
@@ -27,41 +28,32 @@ trait ModelService
      */
     public static function instance()
     {
-        $classname = get_called_class();
-        if (\Yii::$container->has($classname)) {
-            static::$instance = \Yii::$container->get($classname);
-        } else {
-            static::$instance = new $classname();
-        }
-        return static::$instance;
+        $className = get_called_class();
+        return Map::instance($className);
     }
 
-    public function init()
+    /**
+     * ModelService constructor.
+     */
+    public function __construct()
     {
         if ($this->modelName) {
-            $modelClass = $this->modelName;
-            if (\Yii::$container->has($modelClass)) {
-                $this->model = \Yii::$container->get($modelClass);
-            } else {
-                $this->model = new $modelClass;
-            }
+            $this->model = Map::instance($this->modelName);
         }
     }
 
-    public function add($field)
+    public function insert($data)
     {
-        $field['id'] = StringHelper::uuid();
-        return $this->model->add($field);
+
+        return $this->model->insert($data);
     }
 
-    public function addWithoutPk($field)
-    {
-        return $this->model->add($field);
-    }
-
-    public function update($field, $condition)
+    public function update($data , $condition)
     {
         $field['modified_on'] = DateTimeHelper::now();
+        foreach($data as $key => $value) {
+            $this->model->$key = $value;
+        }
         return $this->model->update($field, $condition);
     }
 
