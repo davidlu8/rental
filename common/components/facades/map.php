@@ -15,11 +15,21 @@ class Map {
      * @param $className
      * @return object
      */
-    static function instance($className) {
-        if (!\Yii::$container->has($className)) {
-            \Yii::$container->set($className, $className);
+    static function getInstance($className) {
+        if (\Yii::$container->has($className)) {
+            $classInstance = \Yii::$container->get($className);
+        } else {
+            $classInstance = new $className();
+            \Yii::$container->set($className, $classInstance);
         }
-        $classInstance = \Yii::$container->get($className);
         return $classInstance;
+    }
+
+    /**
+     * @param $className
+     * @param $classInstance
+     */
+    static function setInstance($className, $classInstance) {
+        \Yii::$container->set($className, $classInstance);
     }
 }
