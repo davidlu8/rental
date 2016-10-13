@@ -8,14 +8,15 @@
 namespace common\components\facades;
 
 /**
- * Class map
+ * Class InstanceMap
+ * @package common\components\facades
  */
-class Map {
+class InstanceMap {
     /**
      * @param $className
      * @return object
      */
-    static function getInstance($className) {
+    static function get($className) {
         if (\Yii::$container->has($className)) {
             $classInstance = \Yii::$container->get($className);
         } else {
@@ -29,7 +30,7 @@ class Map {
      * @param $className
      * @param $classInstance
      */
-    static function setInstance($className, $classInstance) {
+    static function set($className, $classInstance) {
         return \Yii::$container->set($className, $classInstance);
     }
 }

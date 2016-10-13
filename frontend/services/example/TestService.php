@@ -7,7 +7,7 @@
  */
 namespace frontend\services\example;
 
-use common\components\facades\Map;
+use common\components\facades\InstanceMap;
 use frontend\components\base\ModelService;
 use frontend\models\example\UserModel;
 
@@ -15,16 +15,23 @@ use frontend\models\example\UserModel;
  * Class TestService
  * @package frontend\services\example
  */
-class TestService extends ModelService {
+class TestService extends ModelService
+{
     public $modelName = UserModel::class;
     public $model;
 
     function __construct()
     {
-        $this->model = Map::getInstance(UserModel::class);
+        $this->model = InstanceMap::get(UserModel::class);
     }
 
-    function getItems() {
-        return $this->model->find()->all();
+    function getItems()
+    {
+        return $this->model->getAll([], '*', 'created_on');
+    }
+
+    function getTest()
+    {
+        UserModel::findOne(['aaa' => 1]);
     }
 }

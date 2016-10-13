@@ -10,5 +10,13 @@ namespace frontend\models\example;
 use frontend\components\base\Model;
 
 class UserModel extends Model {
-    protected $tableName = 'users';
+    static function tableName()
+    {
+        return 'users';
+    }
+
+    static function primaryKey()
+    {
+        return 'id';
+    }
 }

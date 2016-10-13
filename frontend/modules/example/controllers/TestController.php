@@ -10,6 +10,7 @@ namespace frontend\modules\example\controllers;
 use yii\base\Module;
 use frontend\components\base\Controller;
 use frontend\services\example\TestService;
+use frontend\models\example\UserModel;
 
 /**
  * Class TestController
@@ -33,9 +34,15 @@ class TestController extends Controller
     {
         $testService = new TestService();
         return $this->success($testService->insert([
+            'id' => '123',
             'name' => '鲁伟',
             'account' => 'luw01',
             'mobile' => '123',
         ]));
+    }
+
+    public function actionTest() {
+        echo '<pre>';
+        print_r(UserModel::findByPK('123'));
     }
 }

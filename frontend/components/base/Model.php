@@ -8,183 +8,99 @@
 
 namespace frontend\components\base;
 
+use yii\db\ActiveRecord;
 use yii\db\Query;
+use Exception;
 
-class Model
+class Model extends ActiveRecord
 {
-    protected $query;
-    protected $db;
-    protected $tableName;
-    protected $primaryKey;
     /**
-     * @var \yii\db\Transaction
+     * 插入记录
+     * @param array $attributes 字段数据
+     * @return integer 插入记录数
      */
-    protected $transaction; // 事务
-
-    public function __construct($db = null)
+    public static function add($attributes)
     {
-        $this->query = (new Query());
-        if (is_null($db)) {
-            $this->db = \Yii::$app->db;
-        }
+        $command = static::getDb()->createCommand();
+        $command->insert(static::tableName(), $attributes);
+
+        return $command->execute();
     }
 
-    public function insert($data)
+    /**
+     * 更新记录
+     * @param array $attributes 字段数据
+     * @param string|array $condition where条件
+     * @param array $params where参数
+     * @return integer 更新记录数
+     */
+    public static function edit($attributes, $condition = '', $params = [])
     {
-        return $this->db->createCommand()->insert($this->tableName, $data)->execute();
+        $command = static::getDb()->createCommand();
+        $command->update(static::tableName(), $attributes, $condition, $params);
+
+        return $command->execute();
     }
 
-    public function update($data, $condition)
+    /**
+     * 删除记录
+     * @param string|array $condition where条件
+     * @param array $params where参数
+     * @return integer 删除记录数
+     */
+    public static function remove($condition = '', $params = [])
     {
-        return $this->db->createCommand()->update($this->tableName, $data, $condition)->execute();
+        $command = static::getDb()->createCommand();
+        $command->delete(static::tableName(), $condition, $params);
+
+        return $command->execute();
     }
 
-    public function delete($condition)
+    /**
+     * 记录是否存在
+     * @param string|array $condition where条件
+     * @param array $params where参数
+     * @return bool 是否存在
+     */
+    public static function exist($condition = '', $params = [])
     {
-        return $this->db->createCommand()->delete($this->tableName, $condition)->execute();
+        return (new Query())->where($condition, $params)->count() ? true : false;
     }
 
-    public function getOne($fields, $orderBy)
+    /**
+     * 查询记录数
+     * @param string|array $condition where条件
+     * @param array $params where参数
+     * @return integer 记录数
+     */
+    public static function count($condition = '', $params = [])
     {
-        return $this->query->select($fields)
-            ->from($this->tableName)
-            ->orderBy($orderBy)
-            ->one();
+        return (new Query())->where($condition, $params)->count();
     }
 
-    public function getOneByCondition($condition, $fields)
-    {
-        return $this->query->select($fields)
-            ->from($this->tableName)
-            ->where($condition)
-            ->one();
-    }
-
-    public function getScalar($condition, $field, $orderBy)
-    {
-        return $this->query->select($field)
-            ->from($this->tableName)
-            ->where($condition)
-            ->orderBy($orderBy)
-            ->one();
-    }
-
-
-    public function getList($fields, $orderBy)
-    {
-        return $this->query->select($fields)
-            ->from($this->tableName)
-            ->orderBy($orderBy)
-            ->all();
-    }
-
-
-    public function getAll($condition, $fields, $orderBy)
-    {
-        return $this->query->select($fields)
-            ->from($this->tableName)
-            ->where($condition)
-            ->orderBy($orderBy)
-            ->all();
-    }
-
-    public function getLastSql()
-    {
-        return $this->query->createCommand()->sql;
-    }
-
-    public function getPages($pageIndex, $pageSize, $fields, $orderBy)
-    {
-        $queryObject = $this->query->from($this->tableName);
-        $countQuery = clone $queryObject;
-        $total = $countQuery->count();
-        $items = [];
-        if ($total > 0) {
-            $items = $this->query->offset(($pageIndex - 1) * $pageSize)
-                ->limit($pageSize)
-                ->select($fields)
-                ->orderBy($orderBy)
-                ->all();
-        }
-        return [$total, $items];
-    }
-
-    public function getPageByCondition($condition, $pageIndex, $pageSize, $fields, $orderBy)
-    {
-        $queryObject = $this->query->from($this->tableName);
-        if ($condition) {
-            $queryObject->where($condition);
-        }
-        $countQuery = clone $queryObject;
-        $total = $countQuery->count();
-        $items = [];
-        if ($total > 0) {
-            $items = $queryObject->offset(($pageIndex - 1) * $pageSize)
-                ->limit($pageSize)
-                ->select($fields)
-                ->orderBy($orderBy)
-                ->all();
-        }
-        return [$total, $items];
-    }
-
-
-    public function getPagesFromTwoTable($tableA, $tableB, $on, $condition, $pageIndex, $pageSize, $fields, $orderBy)
-    {
-        if (!empty($condition['between'])) {
-            $between = $condition['between'];
-            unset($condition['between']);
-            $queryObject = $this->query->from($tableA)->leftJoin($tableB, $on)->where($condition)->andWhere($between);
-        } else {
-            $queryObject = $this->query->from($tableA)->leftJoin($tableB, $on)->where($condition);
-        }
-        $countQuery = clone $queryObject;
-        $total = $countQuery->count();
-        $items = [];
-        if ($total > 0) {
-            $items = $queryObject->offset(($pageIndex - 1) * $pageSize)
-                ->limit($pageSize)
-                ->select($fields)
-                ->orderBy($orderBy)
-                ->all();
-        }
-        return [$total, $items];
-    }
-
-    public function getPagesFromTables($tableA, $tableB, $on, $condition, $pageIndex, $pageSize, $fields, $orderBy, $operatorWhere)
-    {
-        $queryObject = $this->query->from($tableA)->leftJoin($tableB, $on)->where($condition);
-        if (!empty($operatorWhere)) {
-            foreach ($operatorWhere as $item) {
-                $queryObject->andWhere($item);
+    /**
+     * @param string|array $value 主键值
+     * @return static
+     */
+    public static function findByPK($value) {
+        $primaryKey =  static::primaryKey();
+        $condition = [];
+        if (is_array($primaryKey)) {
+            if (!is_array($value) && !is_string($value)) {
+                throw new Exception("根据主键查询类型不正确");
             }
+            if (is_string($value)) {
+                $value = explode(',', $value);
+            }
+            if (count($value) != count($primaryKey)) {
+                throw new Exception("根据主键查询参数和主键值不匹配");
+            }
+            foreach($primaryKey as $key => $name) {
+                $condition[$name] = $value[$key];
+            }
+        } else {
+            $condition[$primaryKey] = $value;
         }
-        $countQuery = clone $queryObject;
-        $total = $countQuery->count();
-        $items = [];
-        if ($total > 0) {
-            $items = $queryObject->offset(($pageIndex - 1) * $pageSize)
-                ->limit($pageSize)
-                ->select($fields)
-                ->orderBy($orderBy)
-                ->all();
-        }
-        return [$total, $items];
-    }
-
-
-    public function beginTrans()
-    {
-        $this->transaction = $this->db->beginTransaction();
-    }
-
-    public function commit()
-    {
-        $this->transaction->commit();
-    }
-
-    public function rollback()
-    {
-        $this->transaction->rollBack();
+        return static::findOne($condition);
     }
 }
